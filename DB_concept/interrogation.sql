@@ -1,15 +1,22 @@
 USE RaPizz;
--- 1) Retrait du menu de la base de données
-SELECT p.nom, p.prix_de_base, i.nom FROM pizza p, ingredient i, utilise_dans u WHERE p.id_pizza = u.id_pizza AND u.id_ing = i.id_ing;
+
+-- Requête 1) Menu
+-- Affiche le nom de chaque pizza, son prix et les ingrédients qui la composent
+select p.nom, p.prix_de_base, i.nom, ud.quantite
+from Pizza p, utilise_dans ud, Ingredient i
+where p.id_pizza = ud.id_pizza and ud.id_ing = i.id_ing
+order by p.id_pizza;
+
+
 -- Requête 2) Fiche de livraison
 -- Affiche pour chaque livraison : livreur, type de véhicule, client, date, retard, pizza et prix
-select l.nom as "Nom Livreur", l.prenom as "Prenom Livreur", v.type_vehicule, c.nom AS "Nom client", c.prenom as "Prenom Client", liv.date_,
+select l.nom as "Nom Livreur", l.prenom as "Prenom Livreur", v.type_vehicule, c.nom AS "Nom client", c.prenom as "Prenom Client", liv.`date`,
              case when liv.temps > 30 then liv.temps - 30 else 0 end as retard,
              p.nom, p.prix_de_base
 from Livreur l, Vehicule v, Client c, Livraison liv, Pizza p
 where liv.id_livreur = l.id_livreur and liv.id_vehicule = v.id_vehicule 
   and liv.id_client = c.id_client and liv.id_pizza = p.id_pizza
-order by liv.date_;
+order by liv.`date`;
 
 
 -- Requête 3a) Véhicules n'ayant jamais servi
@@ -51,3 +58,4 @@ having count(*) > (
     ) as avg_pizzas
 )
 order by count(*) desc;
+
