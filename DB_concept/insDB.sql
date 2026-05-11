@@ -1,3 +1,4 @@
+USE RaPizz;
 -- Insertion de données pour RaPizz -- Gestion d'une entreprise de pizzas à domicile
 
 -- Insertion des clients
@@ -113,7 +114,7 @@ INSERT INTO Vehicule(id_vehicule, nom, type_vehicule)
 
 
 -- Insertion des livraisons
-INSERT INTO Livraison(id_livraison, date_, temps, prix_facture, est_gratuite, taille, id_vehicule, id_livreur, id_pizza, id_client)
+INSERT INTO Livraison(idlivraison, `date`, temps, prix_facture, est_gratuite, taille, id_vehicule, id_livreur, id_pizza, id_client)
     VALUES
     (1, "2025-11-18 19:30:00", 25, 11.99, FALSE, 1.0, 1, 1, 1, 1),
     (2, "2025-11-18 20:15:00", 32, 0.00, TRUE, 1.0, 2, 2, 2, 2),      -- Gratuite (retard > 30 min)
@@ -134,4 +135,12 @@ INSERT INTO Livraison(id_livraison, date_, temps, prix_facture, est_gratuite, ta
     (17, "2025-11-24 19:00:00", 24, 13.99, FALSE, 1.0, 1, 3, 4, 8),
     (18, "2025-11-24 19:45:00", 30, 0.00, TRUE, 1.0, 2, 4, 2, 5),     -- Gratuite (retard >= 30 min)
     (19, "2025-11-24 20:30:00", 26, 15.99, FALSE, 1.0, 5, 5, 6, 3),
+    (21, "2025-11-24 21:15:00", 24, 11.99, FALSE, 1.0, 1, 1, 1, 4),
+    (22, "2025-11-24 22:00:00", 27, 12.49, FALSE, 1.0, 2, 2, 3, 4),
+    (23, "2025-11-25 10:30:00", 25, 13.99, FALSE, 1.0, 3, 3, 4, 4),
+    (24, "2025-11-25 12:15:00", 28, 14.49, FALSE, 1.0, 5, 4, 7, 4),
+    (25, "2025-11-25 15:45:00", 26, 13.49, FALSE, 1.0, 6, 5, 5, 4),
+    (26, "2025-11-25 18:30:00", 29, 15.99, FALSE, 1.0, 4, 1, 6, 4),
     (20, "2025-11-25 19:15:00", 29, 0.00, TRUE, 1.0, 3, 1, 1, 4);     -- Gratuite (10ème pizza achetée - fidélité)
+
+    
