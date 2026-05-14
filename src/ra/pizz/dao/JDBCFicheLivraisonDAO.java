@@ -12,7 +12,7 @@ public class JDBCFicheLivraisonDAO implements FicheLivraisonDAO {
     public List<FicheLivraison> findAll() throws Exception {
         List<FicheLivraison> list = new ArrayList<>();
         String sql = "SELECT l.nom, l.prenom, v.type_vehicule, c.nom as nom_client, c.prenom as prenom_client, " +
-                     "liv.date, liv.temps, p.nom as nom_pizza, p.prix_de_base, " +
+                     "liv.date, liv.temps, p.nom as nom_pizza, liv.prix_facture, " +
                      "CASE WHEN liv.temps > 30 THEN liv.temps - 30 ELSE 0 END as retard " +
                      "FROM Livreur l, Vehicule v, Client c, Livraison liv, Pizza p " +
                      "WHERE liv.id_livreur = l.id_livreur AND liv.id_vehicule = v.id_vehicule " +
@@ -36,7 +36,7 @@ public class JDBCFicheLivraisonDAO implements FicheLivraisonDAO {
                     rs.getString("nom_pizza"),
                     date,
                     rs.getInt("retard"),
-                    rs.getDouble("prix_de_base")
+                    rs.getDouble("prix_facture")
                 ));
             }
         }

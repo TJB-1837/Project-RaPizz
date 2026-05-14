@@ -140,7 +140,7 @@ public class MainFrame extends JFrame {
                     fl.getDate(),
                     fl.getRetard(),
                     fl.getNomPizza(),
-                    fl.getPrixDeBase()
+                    fl.getPrixFacture()
                 });
             }
             table.setModel(model);

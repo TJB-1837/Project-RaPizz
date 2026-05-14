@@ -7,11 +7,11 @@ public class FicheLivraison {
     private String nomPizza;
     private LocalDateTime date;
     private int retard;
-    private double prixDeBase;
+    private double prixFacture;
 
     public FicheLivraison(String nomLivreur, String prenomLivreur, String typeVehicule, 
                           String nomClient, String prenomClient, String nomPizza, 
-                          LocalDateTime date, int retard, double prixDeBase) {
+                          LocalDateTime date, int retard, double prixFacture) {
         this.nomLivreur = nomLivreur;
         this.prenomLivreur = prenomLivreur;
         this.typeVehicule = typeVehicule;
@@ -20,7 +20,7 @@ public class FicheLivraison {
         this.nomPizza = nomPizza;
         this.date = date;
         this.retard = retard;
-        this.prixDeBase = prixDeBase;
+        this.prixFacture = prixFacture;
     }
 
     public String getNomLivreur() { return nomLivreur; }
@@ -31,5 +31,5 @@ public class FicheLivraison {
     public String getNomPizza() { return nomPizza; }
     public LocalDateTime getDate() { return date; }
     public int getRetard() { return retard; }
-    public double getPrixDeBase() { return prixDeBase; }
+    public double getPrixFacture() { return prixFacture; }
 }
