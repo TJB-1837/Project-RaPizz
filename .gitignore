@@ -16,3 +16,8 @@
 *.tmp
 # Ignore all .xml files
 *.xml
+
+# regen files
+DB_concept/run_all.sql
+DB_concept/user.sql
+regenDB.bat
