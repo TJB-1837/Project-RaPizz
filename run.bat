@@ -13,11 +13,11 @@ echo Compilation de l'application RaPizz...
 echo ========================================
 
 javac -d bin -cp "mysql-connector-j-9.7.0.jar" ^
-  src\ra\pizz\*.java ^
-  src\ra\pizz\model\*.java ^
-  src\ra\pizz\dao\*.java ^
-  src\ra\pizz\ui\*.java ^
-  src\ra\pizz\util\*.java
+  src\rapizz\*.java ^
+  src\rapizz\model\*.java ^
+  src\rapizz\dao\*.java ^
+  src\rapizz\ui\*.java ^
+  src\rapizz\util\*.java
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERREUR: Compilation echouée!
@@ -39,13 +39,13 @@ if "%choice%"=="1" (
     echo ========================================
     echo Test de connexion...
     echo ========================================
-    java -cp "bin;mysql-connector-j-9.7.0.jar" ra.pizz.TestConnection
+    java -cp "bin;mysql-connector-j-9.7.0.jar" rapizz.TestConnection
 ) else if "%choice%"=="2" (
     echo.
     echo ========================================
     echo Lancement de l'application...
     echo ========================================
-    java -cp "bin;mysql-connector-j-9.7.0.jar" ra.pizz.AppMain
+    java -cp "bin;mysql-connector-j-9.7.0.jar" rapizz.AppMain
 ) else (
     echo Choix invalide!
 )
