@@ -1,15 +1,14 @@
 package rapizz.ui;
 
-import rapizz.dao.*;
-import rapizz.model.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.table.*;
+import rapizz.dao.*;
+import rapizz.model.*;
 
 public class MainFrame extends JFrame {
 
@@ -154,6 +153,7 @@ public class MainFrame extends JFrame {
 
         String[] cols = {"Pizza", "Ingrédients", "Naine (×0.67)", "Humaine (prix base)", "Ogresse (×1.33)"};
         tblMenu = buildStyledTable(cols);
+        tblMenu.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         JScrollPane scroll = styledScroll(tblMenu);
 
         // Largeurs colonnes
@@ -186,41 +186,41 @@ public class MainFrame extends JFrame {
             protected void done() {
                 try {
                     List<PizzaMenu> items = get();
-
-                    // findMenu() retourne une ligne par ingrédient — on regroupe par idPizza
-                    // LinkedHashMap pour conserver l'ordre de la requête SQL (ORDER BY id_pizza)
-                    java.util.LinkedHashMap<Integer, Object[]> grouped = new java.util.LinkedHashMap<>();
-
                     for (PizzaMenu pm : items) {
-                        int id = pm.getIdPizza();
-                        if (!grouped.containsKey(id)) {
-                            // Calcul des prix via la logique de Pizza (×2/3, ×1, ×4/3)
-                            double base  = pm.getPrixDeBase();
-                            double naine    = base * 2.0 / 3.0;
-                            double ogresse  = base * 4.0 / 3.0;
-                            grouped.put(id, new Object[]{
-                                pm.getNomPizza(),
-                                new StringBuilder(),   // ingrédients accumulés
-                                String.format("%.2f €", naine),
-                                String.format("%.2f €", base),
-                                String.format("%.2f €", ogresse)
-                            });
+                        double base = pm.getPrixDeBase();
+                        double naine = base * 2.0 / 3.0;
+                        double ogresse = base * 4.0 / 3.0;
+
+                        String ingredientsText;
+                        java.util.Map<String, Integer> ingredients = pm.getIngredients();
+                        if (ingredients == null || ingredients.isEmpty()) {
+                            ingredientsText = "—";
+                        } else {
+                            StringBuilder sb = new StringBuilder();
+                            int i = 0;
+                            for (java.util.Map.Entry<String, Integer> entry : ingredients.entrySet()) {
+                                if (i > 0) sb.append(", ");
+                                sb.append(entry.getKey());
+                                if (entry.getValue() != null && entry.getValue() > 0) {
+                                    sb.append(" x").append(entry.getValue());
+                                }
+                                i++;
+                            }
+                            ingredientsText = sb.toString();
                         }
-                        // Ajoute l'ingrédient dans le StringBuilder
-                        StringBuilder sb = (StringBuilder) grouped.get(id)[1];
-                        if (pm.getNomIngredient() != null) {
-                            if (sb.length() > 0) sb.append(", ");
-                            sb.append(pm.getNomIngredient());
-                        }
+
+                        model.addRow(new Object[]{
+                            pm.getNomPizza(),
+                            ingredientsText,
+                            String.format("%.2f €", naine),
+                            String.format("%.2f €", base),
+                            String.format("%.2f €", ogresse)
+                        });
                     }
 
-                    // Ajoute une ligne par pizza avec les ingrédients concaténés
-                    for (Object[] row : grouped.values()) {
-                        row[1] = row[1].toString().isEmpty() ? "—" : row[1].toString();
-                        model.addRow(row);
-                    }
+                    fitColumnToContent(tblMenu, 1, 520);
 
-                    setStatus(grouped.size() + " pizza(s) chargée(s).");
+                    setStatus(items.size() + " pizza(s) chargée(s).");
                 } catch (Exception ex) {
                     showError("Erreur chargement menu", ex);
                 }
@@ -521,6 +521,27 @@ public class MainFrame extends JFrame {
         sp.setBorder(new LineBorder(BORDER_CLR, 1));
         sp.getViewport().setBackground(PANEL_BG);
         return sp;
+    }
+
+    private void fitColumnToContent(JTable table, int colIndex, int maxWidth) {
+        TableColumn column = table.getColumnModel().getColumn(colIndex);
+        int width = 40;
+
+        TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
+        Component headerComp = headerRenderer.getTableCellRendererComponent(
+            table, column.getHeaderValue(), false, false, 0, colIndex);
+        width = Math.max(width, headerComp.getPreferredSize().width);
+
+        for (int row = 0; row < table.getRowCount(); row++) {
+            TableCellRenderer renderer = table.getCellRenderer(row, colIndex);
+            Component comp = table.prepareRenderer(renderer, row, colIndex);
+            width = Math.max(width, comp.getPreferredSize().width + 16);
+        }
+
+        if (maxWidth > 0 && width > maxWidth) {
+            width = maxWidth;
+        }
+        column.setPreferredWidth(width);
     }
 
     /** Bouton de rafraîchissement en bas de panneau */

@@ -1,22 +1,23 @@
 package rapizz.model;
 
+import java.util.Map;
+
 public class PizzaMenu {
     private int idPizza;
-    private String nomPizza, nomIngredient;
+    private String nomPizza;
     private double prixDeBase;
-    private int quantite;
+    private Map<String, Integer> ingredients;
 
-    public PizzaMenu(int idPizza, String nomPizza, double prixDeBase, String nomIngredient, int quantite) {
+    public PizzaMenu(int idPizza, String nomPizza, double prixDeBase,
+                     Map<String, Integer> ingredients) {
         this.idPizza = idPizza;
         this.nomPizza = nomPizza;
         this.prixDeBase = prixDeBase;
-        this.nomIngredient = nomIngredient;
-        this.quantite = quantite;
+        this.ingredients = ingredients;
     }
 
     public int getIdPizza() { return idPizza; }
     public String getNomPizza() { return nomPizza; }
     public double getPrixDeBase() { return prixDeBase; }
-    public String getNomIngredient() { return nomIngredient; }
-    public int getQuantite() { return quantite; }
+    public Map<String, Integer> getIngredients() { return ingredients; }
 }
