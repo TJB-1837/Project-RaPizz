@@ -380,7 +380,12 @@ public class MainFrame extends JFrame {
         right.add(aboveCard, BorderLayout.SOUTH);
 
         center.add(right);
-        panel.add(center, BorderLayout.CENTER);
+        JScrollPane centerScroll = new JScrollPane(center,
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        centerScroll.setBorder(null);
+        centerScroll.getViewport().setBackground(BG);
+        panel.add(centerScroll, BorderLayout.CENTER);
 
         JPanel footer = buildRefreshFooter("Rafraîchir les statistiques", e -> loadStats());
         panel.add(footer, BorderLayout.SOUTH);
