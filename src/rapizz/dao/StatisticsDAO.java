@@ -55,6 +55,20 @@ public class StatisticsDAO {
         }
         return 0;
     }
+
+    public double getTotalRevenue() throws Exception {
+        String sql = "SELECT COALESCE(SUM(prix_facture), 0) as ca FROM Livraison";
+
+        try (Connection c = DBConnection.getConnection();
+             Statement st = c.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            if (rs.next()) {
+                return rs.getDouble("ca");
+            }
+        }
+        return 0;
+    }
     
     public List<String[]> getClientsAboveAverage() throws Exception {
         List<String[]> list = new ArrayList<>();

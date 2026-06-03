@@ -44,6 +44,8 @@ public class MainFrame extends JFrame {
     private JTable tblMenu, tblLivraisons, tblVehicules,
                    tblOrdersPerClient, tblAboveAvg;
     private JLabel lblAvgOrders;
+    private JLabel lblRevenueTotal;
+    private JLabel lblRevenueMonth;
     private JLabel lblStatus;
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -326,8 +328,12 @@ public class MainFrame extends JFrame {
         panel.setBackground(BG);
         panel.setBorder(new EmptyBorder(20, 24, 20, 24));
 
-        panel.add(buildSectionHeader("Statistiques",
-                "Véhicules inutilisés, commandes par client, moyenne", SAND), BorderLayout.NORTH);
+        JPanel top = new JPanel(new BorderLayout(0, 12));
+        top.setOpaque(false);
+        top.add(buildSectionHeader("Statistiques",
+            "Véhicules inutilisés, commandes par client, moyenne", SAND), BorderLayout.NORTH);
+        top.add(buildRevenueBand(), BorderLayout.SOUTH);
+        panel.add(top, BorderLayout.NORTH);
 
         // Zone centrale — deux colonnes
         JPanel center = new JPanel(new GridLayout(1, 2, 16, 0));
@@ -398,6 +404,7 @@ public class MainFrame extends JFrame {
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             List<String[]> unusedVehicles, ordersPerClient, aboveAvg;
             double avg;
+            double totalRevenue;
 
             @Override
             protected Void doInBackground() throws Exception {
@@ -405,6 +412,7 @@ public class MainFrame extends JFrame {
                 ordersPerClient = statsDAO.getOrdersPerClient();
                 avg             = statsDAO.getAverageOrders();
                 aboveAvg        = statsDAO.getClientsAboveAverage();
+                totalRevenue    = statsDAO.getTotalRevenue();
                 return null;
             }
 
@@ -417,6 +425,7 @@ public class MainFrame extends JFrame {
                     fillTable(tblOrdersPerClient, ordersPerClient);
                     fillTable(tblAboveAvg,        aboveAvg);
                     lblAvgOrders.setText(String.format("%.1f", avg));
+                    lblRevenueTotal.setText(String.format("%.2f €", totalRevenue));
                     setStatus("Statistiques mises à jour.");
                 } catch (Exception ex) {
                     showError("Erreur chargement statistiques", ex);
@@ -424,6 +433,31 @@ public class MainFrame extends JFrame {
             }
         };
         worker.execute();
+    }
+
+    private JPanel buildRevenueBand() {
+        JPanel band = new JPanel(new GridLayout(1, 2, 16, 0));
+        band.setOpaque(false);
+
+        JPanel totalCard = buildCard("CA total");
+        totalCard.setPreferredSize(new Dimension(0, 180));
+        lblRevenueTotal = new JLabel("—");
+        lblRevenueTotal.setFont(new Font("Segoe UI", Font.BOLD, 34));
+        lblRevenueTotal.setForeground(SAGE);
+        lblRevenueTotal.setHorizontalAlignment(SwingConstants.CENTER);
+        JLabel totalLabel = new JLabel("toutes périodes");
+        totalLabel.setFont(FONT_SMALL);
+        totalLabel.setForeground(TEXT_MID);
+        totalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        JPanel totalInner = new JPanel(new GridLayout(2, 1, 0, 4));
+        totalInner.setOpaque(false);
+        totalInner.add(lblRevenueTotal);
+        totalInner.add(totalLabel);
+        totalCard.add(totalInner, BorderLayout.CENTER);
+
+
+        band.add(totalCard);
+        return band;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
