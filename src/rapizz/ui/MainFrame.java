@@ -36,6 +36,7 @@ public class MainFrame extends JFrame {
     private final FicheLivraisonDAO ficheLivraisonDAO = new JDBCFicheLivraisonDAO();
     private final PizzaMenuDAO      pizzaMenuDAO      = new JDBCPizzaMenuDAO();
     private final StatisticsDAO     statsDAO          = new StatisticsDAO();
+    private final CommandeDAO       commandeDAO       = new JDBCCommandeDAO();
 
     // ── Onglets ───────────────────────────────────────────────────────────────
     private JTabbedPane tabs;
@@ -47,6 +48,16 @@ public class MainFrame extends JFrame {
     private JLabel lblRevenueTotal;
     private JLabel lblRevenueMonth;
     private JLabel lblStatus;
+
+    // ── Nouvelle commande ────────────────────────────────────────────────────
+    private JComboBox<ComboItem<Client>> cmbClient;
+    private JComboBox<ComboItem<Pizza>> cmbPizza;
+    private JComboBox<ComboItem<Livreur>> cmbLivreur;
+    private JComboBox<ComboItem<Vehicule>> cmbVehicule;
+    private JComboBox<String> cmbSize;
+    private JLabel lblClientBalance;
+    private JLabel lblPrice;
+    private JLabel lblBalanceAfter;
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -137,6 +148,7 @@ public class MainFrame extends JFrame {
         tabs.addTab("  Carte / Menu  ",    buildMenuPanel());
         tabs.addTab("  Fiches livraison ", buildLivraisonsPanel());
         tabs.addTab("  Statistiques     ", buildStatsPanel());
+        tabs.addTab("  Nouvelle commande ", buildOrderPanel());
 
         return tabs;
     }
@@ -435,6 +447,263 @@ public class MainFrame extends JFrame {
         worker.execute();
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Onglet 4 — Nouvelle commande
+    // ══════════════════════════════════════════════════════════════════════════
+
+    private JPanel buildOrderPanel() {
+        JPanel panel = new JPanel(new BorderLayout(12, 12));
+        panel.setBackground(BG);
+        panel.setBorder(new EmptyBorder(20, 24, 20, 24));
+
+        panel.add(buildSectionHeader("Nouvelle commande",
+                "Saisie de commande, solde client et facturation", ACCENT), BorderLayout.NORTH);
+
+        JPanel formCard = buildCard("Détails de la commande");
+        formCard.add(buildOrderForm(), BorderLayout.CENTER);
+        panel.add(formCard, BorderLayout.CENTER);
+
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        footer.setOpaque(false);
+        footer.setBorder(new EmptyBorder(10, 0, 0, 0));
+        JButton btnReload = buildIconButton("↻  Recharger les listes", SAGE, Color.WHITE);
+        btnReload.addActionListener(e -> loadOrderData());
+        JButton btnCreate = buildIconButton("✔  Créer la commande", ACCENT, Color.WHITE);
+        btnCreate.addActionListener(e -> submitOrder());
+        footer.add(btnReload);
+        footer.add(btnCreate);
+        panel.add(footer, BorderLayout.SOUTH);
+
+        loadOrderData();
+        return panel;
+    }
+
+    private JPanel buildOrderForm() {
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+
+        cmbClient = new JComboBox<>();
+        cmbPizza = new JComboBox<>();
+        cmbLivreur = new JComboBox<>();
+        cmbVehicule = new JComboBox<>();
+        cmbSize = new JComboBox<>(new String[]{"naine", "humaine", "ogresse"});
+        lblClientBalance = new JLabel("—");
+        lblClientBalance.setFont(FONT_LABEL);
+        lblClientBalance.setForeground(TEXT_DARK);
+        lblPrice = new JLabel("—");
+        lblPrice.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblPrice.setForeground(ACCENT);
+        lblBalanceAfter = new JLabel("—");
+        lblBalanceAfter.setFont(FONT_LABEL);
+        lblBalanceAfter.setForeground(TEXT_DARK);
+
+        ActionListener update = e -> updateOrderPricing();
+        cmbClient.addActionListener(update);
+        cmbPizza.addActionListener(update);
+        cmbSize.addActionListener(update);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+
+        int row = 0;
+        addFormRow(form, gbc, row++, "Client", cmbClient);
+        addFormRow(form, gbc, row++, "Solde client", lblClientBalance);
+        addFormRow(form, gbc, row++, "Pizza", cmbPizza);
+        addFormRow(form, gbc, row++, "Taille", cmbSize);
+        addFormRow(form, gbc, row++, "Livreur", cmbLivreur);
+        addFormRow(form, gbc, row++, "Véhicule", cmbVehicule);
+        addFormRow(form, gbc, row++, "Prix facturé", lblPrice);
+        addFormRow(form, gbc, row++, "Solde après", lblBalanceAfter);
+
+        return form;
+    }
+
+    private void addFormRow(JPanel form, GridBagConstraints gbc, int row, String label, JComponent field) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0.25;
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(FONT_LABEL);
+        lbl.setForeground(TEXT_MID);
+        form.add(lbl, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.75;
+        form.add(field, gbc);
+    }
+
+    private void loadOrderData() {
+        setStatus("Chargement des données de commande…");
+
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            List<Client> clients;
+            List<Pizza> pizzas;
+            List<Livreur> livreurs;
+            List<Vehicule> vehicules;
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                clients = commandeDAO.getClients();
+                pizzas = commandeDAO.getPizzas();
+                livreurs = commandeDAO.getLivreurs();
+                vehicules = commandeDAO.getVehicules();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    get();
+
+                    cmbClient.setModel(buildClientModel(clients));
+                    cmbPizza.setModel(buildPizzaModel(pizzas));
+                    cmbLivreur.setModel(buildLivreurModel(livreurs));
+                    cmbVehicule.setModel(buildVehiculeModel(vehicules));
+
+                    updateOrderPricing();
+                    setStatus("Données de commande chargées.");
+                } catch (Exception ex) {
+                    showError("Erreur chargement commande", ex);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void submitOrder() {
+        Client client = getSelectedClient();
+        Pizza pizza = getSelectedPizza();
+        Livreur livreur = getSelectedLivreur();
+        Vehicule vehicule = getSelectedVehicule();
+
+        if (client == null || pizza == null || livreur == null || vehicule == null) {
+            JOptionPane.showMessageDialog(this,
+                "Merci de sélectionner un client, une pizza, un livreur et un véhicule.",
+                "Commande incomplète", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String taille = (String) cmbSize.getSelectedItem();
+        double multiplier = getTailleMultiplier(taille);
+
+        try {
+            commandeDAO.createCommande(client.getId(), pizza.getId(), livreur.getId(),
+                vehicule.getId(), multiplier);
+
+            setStatus("Commande enregistrée.");
+            loadLivraisons();
+            loadStats();
+            loadOrderData();
+            JOptionPane.showMessageDialog(this,
+                "Commande enregistrée avec succès.",
+                "Succès", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            showError("Erreur création commande", ex);
+        }
+    }
+
+    private void updateOrderPricing() {
+        Client client = getSelectedClient();
+        Pizza pizza = getSelectedPizza();
+        String taille = (String) cmbSize.getSelectedItem();
+
+        if (client != null) {
+            lblClientBalance.setText(String.format("%.2f €", client.getSolde()));
+        } else {
+            lblClientBalance.setText("—");
+        }
+
+        double prix = 0;
+        if (pizza != null) {
+            prix = pizza.getPrix(taille != null ? taille : "humaine");
+        }
+
+        lblPrice.setText(String.format("%.2f €", prix));
+
+        if (client != null) {
+            double after = client.getSolde() - prix;
+            lblBalanceAfter.setText(String.format("%.2f €", after));
+            if (after < 0) {
+                lblBalanceAfter.setForeground(new Color(0xC0392B));
+            } else {
+                lblBalanceAfter.setForeground(TEXT_DARK);
+            }
+        } else {
+            lblBalanceAfter.setText("—");
+            lblBalanceAfter.setForeground(TEXT_DARK);
+        }
+    }
+
+    private double getTailleMultiplier(String taille) {
+        if (taille == null) {
+            return 1.0;
+        }
+        switch (taille) {
+            case "naine": return 2.0 / 3.0;
+            case "ogresse": return 4.0 / 3.0;
+            default: return 1.0;
+        }
+    }
+
+    private DefaultComboBoxModel<ComboItem<Client>> buildClientModel(List<Client> clients) {
+        DefaultComboBoxModel<ComboItem<Client>> model = new DefaultComboBoxModel<>();
+        for (Client c : clients) {
+            String label = c.getNom() + " " + c.getPrenom() + " (" + String.format("%.2f €", c.getSolde()) + ")";
+            model.addElement(new ComboItem<>(label, c));
+        }
+        return model;
+    }
+
+    private DefaultComboBoxModel<ComboItem<Pizza>> buildPizzaModel(List<Pizza> pizzas) {
+        DefaultComboBoxModel<ComboItem<Pizza>> model = new DefaultComboBoxModel<>();
+        for (Pizza p : pizzas) {
+            String label = p.getNom() + " (" + String.format("%.2f €", p.getPrixDeBase()) + ")";
+            model.addElement(new ComboItem<>(label, p));
+        }
+        return model;
+    }
+
+    private DefaultComboBoxModel<ComboItem<Livreur>> buildLivreurModel(List<Livreur> livreurs) {
+        DefaultComboBoxModel<ComboItem<Livreur>> model = new DefaultComboBoxModel<>();
+        for (Livreur l : livreurs) {
+            String label = l.getNom() + " " + l.getPrenom();
+            model.addElement(new ComboItem<>(label, l));
+        }
+        return model;
+    }
+
+    private DefaultComboBoxModel<ComboItem<Vehicule>> buildVehiculeModel(List<Vehicule> vehicules) {
+        DefaultComboBoxModel<ComboItem<Vehicule>> model = new DefaultComboBoxModel<>();
+        for (Vehicule v : vehicules) {
+            String label = v.getNom() + " (" + v.getType() + ")";
+            model.addElement(new ComboItem<>(label, v));
+        }
+        return model;
+    }
+
+    private Client getSelectedClient() {
+        ComboItem<Client> item = (ComboItem<Client>) cmbClient.getSelectedItem();
+        return item != null ? item.getValue() : null;
+    }
+
+    private Pizza getSelectedPizza() {
+        ComboItem<Pizza> item = (ComboItem<Pizza>) cmbPizza.getSelectedItem();
+        return item != null ? item.getValue() : null;
+    }
+
+    private Livreur getSelectedLivreur() {
+        ComboItem<Livreur> item = (ComboItem<Livreur>) cmbLivreur.getSelectedItem();
+        return item != null ? item.getValue() : null;
+    }
+
+    private Vehicule getSelectedVehicule() {
+        ComboItem<Vehicule> item = (ComboItem<Vehicule>) cmbVehicule.getSelectedItem();
+        return item != null ? item.getValue() : null;
+    }
+
     private JPanel buildRevenueBand() {
         JPanel band = new JPanel(new GridLayout(1, 2, 16, 0));
         band.setOpaque(false);
@@ -651,6 +920,22 @@ public class MainFrame extends JFrame {
         loadMenu();
         loadLivraisons();
         loadStats();
+        loadOrderData();
+    }
+
+    private static class ComboItem<T> {
+        private final String label;
+        private final T value;
+
+        private ComboItem(String label, T value) {
+            this.label = label;
+            this.value = value;
+        }
+
+        public T getValue() { return value; }
+
+        @Override
+        public String toString() { return label; }
     }
 
     // ══════════════════════════════════════════════════════════════════════════
