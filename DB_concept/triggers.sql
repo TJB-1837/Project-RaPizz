@@ -1,10 +1,9 @@
 -- Procédure stockée pour vérifier et appliquer les bonifications
 USE RaPizz;
-
-DROP TRIGGER IF EXISTS tr_pizza_gratuite;
-DROP TRIGGER IF EXISTS tr_pizza_gratuite_10;
-DROP TRIGGER IF EXISTS tr_pizza_gratuite_retard;
 DELIMITER //
+DROP TRIGGER IF EXISTS tr_pizza_gratuite //
+DROP TRIGGER IF EXISTS tr_pizza_gratuite_10 //
+DROP TRIGGER IF EXISTS tr_pizza_gratuite_retard //
 
 CREATE TRIGGER tr_pizza_gratuite
 BEFORE INSERT ON Livraison
@@ -23,5 +22,6 @@ BEGIN
         SET NEW.prix_facture  = 0;
         SET NEW.est_gratuite  = TRUE;
     END IF;
+    
 END //
-DELIMITER;
+DELIMITER ;

@@ -1,119 +1,90 @@
-# RaPizz - Gestion d'une Entreprise de Pizzas à Domicile
+# RaPizz — Gestion d'une entreprise de pizzas à domicile
 
-## Structure du Projet
+## Vue d'ensemble
+Ce projet Java (Swing + JDBC) gère le menu, les commandes et les fiches de livraison
+pour une pizzeria. La connexion à une base MySQL est assurée via `mysql-connector-j-9.7.0.jar`.
+
+## Arborescence principale
 
 ```
 Project-RaPizz/
-├── DB_concept/
-│   ├── createDB.sql       # Création de la base de données
-│   ├── insDB.sql          # Insertion des données
-│   ├── clearDB.sql        # Suppression des données
-│   ├── queries.sql        # Requêtes SQL
-│   └── triggers.sql       # Triggers et procédures stockées
-├── src/ra/pizz/
-│   ├── model/             # Classes modèles (Client, Pizza, etc.)
-│   ├── dao/               # Data Access Objects (JDBC)
-│   ├── ui/                # Interface Swing
-│   ├── util/              # Utilitaires (DBConnection)
-│   ├── AppMain.java       # Point d'entrée principal
-│   └── TestConnection.java # Test de connexion
-└── mysql-connector-j-9.7.0.jar  # Driver JDBC MySQL
+├── DB_concept/                # Scripts SQL (création, insertion, triggers, requêtes)
+├── src/                      # Code source Java (package `ra.pizz`)
+├── bin/                      # Fichiers compilés (générés après compilation)
+└── mysql-connector-j-9.7.0.jar# Driver JDBC MySQL
 ```
 
 ## Prérequis
 
-1. **MySQL Server** installé et en cours d'exécution
-2. **JDK 8+** (testé avec JDK 25.0.3)
-3. **Driver JDBC** : `mysql-connector-j-9.7.0.jar` (inclus)
+- MySQL Server installé et en cours d'exécution
+- JDK 8 ou supérieur
+- `mysql-connector-j-9.7.0.jar` (fourni dans le dépôt)
 
-## Installation et Configuration
+## Installation rapide (Windows)
 
-### 1. Créer la base de données
+1. Créer la base et les tables :
 
-```bash
-cd c:\Users\alexp\Desktop\E3\Project-RaPizz
-
-# Créer la DB et les tables
+```powershell
 mysql -u root < DB_concept\createDB.sql
-
-# Insérer les données
 mysql -u root RaPizz < DB_concept\insDB.sql
-
-# Charger les triggers (optionnel)
+# (optionnel) charger les triggers
 mysql -u root RaPizz < DB_concept\triggers.sql
-
-# Vérifier
-mysql -u root RaPizz -e "SELECT COUNT(*) as pizza_count FROM Pizza;"
 ```
 
-### 2. Modifier les credentials (si nécessaire)
+2. Ajuster les identifiants MySQL si nécessaire :
 
-Éditer `src/ra/pizz/util/DBConnection.java` :
-```java
-private static final String USER = "root";      // votre user MySQL
-private static final String PASSWORD = "";      // votre password MySQL
-```
+Éditez `src/ra/pizz/util/DBConnection.java` et mettez à jour `USER` et `PASSWORD`.
 
-### 3. Compiler l'application
+3. Compiler le projet :
 
-```bash
-# Créer le répertoire de sortie
+```powershell
 mkdir bin
-
-# Compiler tous les fichiers
-javac -d bin -cp "mysql-connector-j-9.7.0.jar" ^
-  src\ra\pizz\*.java ^
-  src\ra\pizz\model\*.java ^
-  src\ra\pizz\dao\*.java ^
-  src\ra\pizz\ui\*.java ^
-  src\ra\pizz\util\*.java
+javac -d bin -cp "mysql-connector-j-9.7.0.jar" src\ra\pizz\*.java src\ra\pizz\model\*.java src\ra\pizz\dao\*.java src\ra\pizz\ui\*.java src\ra\pizz\util\*.java
 ```
 
-### 4. Exécuter l'application
+4. Lancer l'application ou tester la connexion :
 
-```bash
-# Test de connexion
+```powershell
 java -cp "bin;mysql-connector-j-9.7.0.jar" ra.pizz.TestConnection
-
-# Lancer l'application Swing
 java -cp "bin;mysql-connector-j-9.7.0.jar" ra.pizz.AppMain
 ```
 
-## Fonctionnalités
+Remarque : sur Linux/macOS, remplacez `;` par `:` dans le classpath.
 
-### 1. Menu
-- Affiche toutes les pizzas avec leurs ingrédients
-- Calcul automatique des prix pour les 3 tailles (naine, humaine, ogresse)
+## Fonctionnalités principales
 
-### 2. Fiche de Livraison
-- Liste toutes les livraisons avec détails livreur/client/pizza
-- Affiche les retards calculés (temps > 30 min)
+- Affichage du menu et des ingrédients
+- Calcul automatique des prix selon la taille
+- Gestion des fiches de livraison (retards détectés)
+- Statistiques (véhicules non utilisés, commandes par client, clients au-dessus de la moyenne)
 
-### 3. Statistiques
-- **Véhicules non utilisés** : Affiche les véhicules jamais utilisés
-- **Commandes par client** : Nombre de pizzas par client
-- **Moyenne des commandes** : Calcul de la moyenne
-- **Clients au-dessus moyenne** : Affiche les meilleurs clients
+## Architecture
 
-## Architecture DAO
+Le projet utilise le pattern DAO avec JDBC. Principaux DAO :
 
-L'application utilise le pattern DAO avec JDBC :
+- `PizzaMenuDAO`, `FicheLivraisonDAO`, `StatisticsDAO`, etc.
 
-- **PizzaMenuDAO** : Requête Menu
-- **FicheLivraisonDAO** : Requête Fiche de Livraison
-- **StatisticsDAO** : Toutes les statistiques
+## Conseils d'utilisation
 
-## Notes
+- Exécutez d'abord le script `triggers.sql` si vous utilisez les fonctionnalités dépendantes des triggers.
+- Vérifiez les credentials dans `src/ra/pizz/util/DBConnection.java` avant d'exécuter l'application.
 
-- Le pilote JDBC MySQL est déjà inclus : `mysql-connector-j-9.7.0.jar`
-- Tous les modèles sont immutables (pattern immuable)
-- Les requêtes utilisent des prepared statements ou des statements sécurisés
-- La connexion est fermée automatiquement (try-with-resources)
-- IL EST NECESSAIRE D'EXECUTER LE TRIGGER UNE PREMIERE FOIS AVANT D'EXECUTER L'APP ! 
+## Fichiers utiles
+
+- Scripts SQL : [DB_concept/createDB.sql](DB_concept/createDB.sql)
+- Test de connexion : [src/ra/pizz/TestConnection.java](src/ra/pizz/TestConnection.java)
+- Point d'entrée GUI : [src/ra/pizz/AppMain.java](src/ra/pizz/AppMain.java)
 
 ## Améliorations possibles
 
-- Ajouter un système d'authentification
-- Implémenter la gestion des commandes multiples
-- Ajouter un système de facturation PDF
-- Implémenter des notifications de retard
+- Authentification et gestion des utilisateurs
+- Gestion de commandes multiples et facturation (PDF)
+- Notifications (email/SMS) pour les retards
+
+---
+
+Si vous voulez, je peux :
+
+- exécuter une compilation et tester `TestConnection` ici, ou
+- ajouter des instructions spécifiques pour Linux/macOS.
+

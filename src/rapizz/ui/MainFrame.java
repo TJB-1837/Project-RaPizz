@@ -366,7 +366,7 @@ public class MainFrame extends JFrame {
 
         // Bloc moyenne
         JPanel avgCard = buildCard("Moyenne de commandes par client");
-        avgCard.setPreferredSize(new Dimension(0, 80));
+        avgCard.setPreferredSize(new Dimension(0, 40));
         lblAvgOrders = new JLabel("—");
         lblAvgOrders.setFont(new Font("Segoe UI", Font.BOLD, 32));
         lblAvgOrders.setForeground(ACCENT);
