@@ -24,32 +24,28 @@ Project-RaPizz/
 
 1. Créer la base et les tables :
 
-```powershell
-mysql -u root < DB_concept\createDB.sql
-mysql -u root RaPizz < DB_concept\insDB.sql
-# (optionnel) charger les triggers
-mysql -u root RaPizz < DB_concept\triggers.sql
-```
+Dans le CLI MySQL exécutez les commandes suivantes :
+SOURCE C:\Users\antoi\Desktop\ESIEE\E3 - FI (Informatique et applications)\Base de donnees\Project-RaPizz\DB_concept\clearDB.sql
+SOURCE C:\Users\antoi\Desktop\ESIEE\E3 - FI (Informatique et applications)\Base de donnees\Project-RaPizz\DB_concept\createDB.sql
+SOURCE C:\Users\antoi\Desktop\ESIEE\E3 - FI (Informatique et applications)\Base de donnees\Project-RaPizz\DB_concept\insDB.sql
+SOURCE C:\Users\antoi\Desktop\ESIEE\E3 - FI (Informatique et applications)\Base de donnees\Project-RaPizz\DB_concept\triggers.sql
 
-2. Ajuster les identifiants MySQL si nécessaire :
+2. Ajuster les identifiants MySQL si nécessaire et créez la base de données :
 
 Éditez `src/ra/pizz/util/DBConnection.java` et mettez à jour `USER` et `PASSWORD`.
 
-3. Compiler le projet :
 
-```powershell
-mkdir bin
-javac -d bin -cp "mysql-connector-j-9.7.0.jar" src\ra\pizz\*.java src\ra\pizz\model\*.java src\ra\pizz\dao\*.java src\ra\pizz\ui\*.java src\ra\pizz\util\*.java
-```
+Votre base de donnée est prête pour l'utilisation.
 
-4. Lancer l'application ou tester la connexion :
+4. lancer l'application
 
-```powershell
-java -cp "bin;mysql-connector-j-9.7.0.jar" ra.pizz.TestConnection
-java -cp "bin;mysql-connector-j-9.7.0.jar" ra.pizz.AppMain
-```
+Exécutez le fichier run.bat (./run.bat en console) pour lancer l'application.
+Ce fichier compile le projet puis donne les 2 choix suivants :
 
-Remarque : sur Linux/macOS, remplacez `;` par `:` dans le classpath.
+Choix 1 : tester la connextion à la base de données
+
+Choix 2 : lancement de l'application
+
 
 ## Fonctionnalités principales
 
@@ -64,27 +60,16 @@ Le projet utilise le pattern DAO avec JDBC. Principaux DAO :
 
 - `PizzaMenuDAO`, `FicheLivraisonDAO`, `StatisticsDAO`, etc.
 
-## Conseils d'utilisation
-
-- Exécutez d'abord le script `triggers.sql` si vous utilisez les fonctionnalités dépendantes des triggers.
-- Vérifiez les credentials dans `src/ra/pizz/util/DBConnection.java` avant d'exécuter l'application.
-
 ## Fichiers utiles
 
 - Scripts SQL : [DB_concept/createDB.sql](DB_concept/createDB.sql)
 - Test de connexion : [src/ra/pizz/TestConnection.java](src/ra/pizz/TestConnection.java)
 - Point d'entrée GUI : [src/ra/pizz/AppMain.java](src/ra/pizz/AppMain.java)
 
-## Améliorations possibles
 
-- Authentification et gestion des utilisateurs
-- Gestion de commandes multiples et facturation (PDF)
-- Notifications (email/SMS) pour les retards
+## Vidéo de présentation 
 
----
+Vous trouverez la vidéo de présentaion grâce au lien suivant : https://youtu.be/zugWiLksGEA
 
-Si vous voulez, je peux :
 
-- exécuter une compilation et tester `TestConnection` ici, ou
-- ajouter des instructions spécifiques pour Linux/macOS.
 
