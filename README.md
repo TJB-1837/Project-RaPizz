@@ -109,6 +109,7 @@ L'application utilise le pattern DAO avec JDBC :
 - Tous les modèles sont immutables (pattern immuable)
 - Les requêtes utilisent des prepared statements ou des statements sécurisés
 - La connexion est fermée automatiquement (try-with-resources)
+- IL EST NECESSAIRE D'EXECUTER LE TRIGGER UNE PREMIERE FOIS AVANT D'EXECUTER L'APP ! 
 
 ## Améliorations possibles
 
