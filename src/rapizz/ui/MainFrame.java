@@ -43,7 +43,9 @@ public class MainFrame extends JFrame {
 
     // ── Tables ────────────────────────────────────────────────────────────────
     private JTable tblMenu, tblLivraisons, tblVehicules,
-                   tblOrdersPerClient, tblAboveAvg;
+                   tblOrdersPerClient, tblAboveAvg,
+                   tblBestClient, tblWorstDeliverer,
+                   tblMostPizza, tblLeastPizza, tblFavoriteIngredient;
     private JLabel lblAvgOrders;
     private JLabel lblRevenueTotal;
     private JLabel lblRevenueMonth;
@@ -343,7 +345,7 @@ public class MainFrame extends JFrame {
         JPanel top = new JPanel(new BorderLayout(0, 12));
         top.setOpaque(false);
         top.add(buildSectionHeader("Statistiques",
-            "Véhicules inutilisés, commandes par client, moyenne", SAND), BorderLayout.NORTH);
+            "Clients, livreurs, pizzas et ingrédients", SAND), BorderLayout.NORTH);
         top.add(buildRevenueBand(), BorderLayout.SOUTH);
         panel.add(top, BorderLayout.NORTH);
 
@@ -352,14 +354,15 @@ public class MainFrame extends JFrame {
         center.setOpaque(false);
 
         // ── Colonne gauche ─────────────────────────────────────────────────
-        JPanel left = new JPanel(new BorderLayout(0, 12));
+        JPanel left = new JPanel();
         left.setOpaque(false);
+        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
 
         // Bloc véhicules
         JPanel vehiculesCard = buildCard("Véhicules n'ayant jamais servi");
         tblVehicules = buildStyledTable(new String[]{"Véhicule"});
         vehiculesCard.add(styledScroll(tblVehicules), BorderLayout.CENTER);
-        left.add(vehiculesCard, BorderLayout.NORTH);
+        addCardToColumn(left, vehiculesCard);
 
         // Bloc moyenne
         JPanel avgCard = buildCard("Moyenne de commandes par client");
@@ -377,25 +380,56 @@ public class MainFrame extends JFrame {
         avgInner.add(lblAvgOrders);
         avgInner.add(avgLabel);
         avgCard.add(avgInner, BorderLayout.CENTER);
-        left.add(avgCard, BorderLayout.CENTER);
+        addCardToColumn(left, avgCard);
+
+        // Bloc meilleur client
+        JPanel bestClientCard = buildCard("Meilleur client");
+        tblBestClient = buildStyledTable(new String[]{"Nom", "Prénom", "Commandes"});
+        bestClientCard.add(styledScroll(tblBestClient), BorderLayout.CENTER);
+        addCardToColumn(left, bestClientCard);
+
+        // Bloc ingrédient favori
+        JPanel ingredientCard = buildCard("Ingrédient favori");
+        tblFavoriteIngredient = buildStyledTable(new String[]{"Ingrédient", "Quantité"});
+        ingredientCard.add(styledScroll(tblFavoriteIngredient), BorderLayout.CENTER);
+        addCardToColumn(left, ingredientCard);
 
         center.add(left);
 
         // ── Colonne droite ─────────────────────────────────────────────────
-        JPanel right = new JPanel(new BorderLayout(0, 12));
+        JPanel right = new JPanel();
         right.setOpaque(false);
+        right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
 
         // Commandes par client
         JPanel ordersCard = buildCard("Commandes par client");
         tblOrdersPerClient = buildStyledTable(new String[]{"Nom", "Prénom", "Commandes"});
         ordersCard.add(styledScroll(tblOrdersPerClient), BorderLayout.CENTER);
-        right.add(ordersCard, BorderLayout.CENTER);
+        addCardToColumn(right, ordersCard);
 
         // Clients > moyenne
         JPanel aboveCard = buildCard("Clients au-dessus de la moyenne");
         tblAboveAvg = buildStyledTable(new String[]{"Nom", "Prénom", "Commandes"});
         aboveCard.add(styledScroll(tblAboveAvg), BorderLayout.CENTER);
-        right.add(aboveCard, BorderLayout.SOUTH);
+        addCardToColumn(right, aboveCard);
+
+        // Livreur le plus en retard
+        JPanel worstCard = buildCard("Livreur le plus en retard");
+        tblWorstDeliverer = buildStyledTable(new String[]{"Livreur", "Véhicule", "Retards"});
+        worstCard.add(styledScroll(tblWorstDeliverer), BorderLayout.CENTER);
+        addCardToColumn(right, worstCard);
+
+        // Pizza la plus demandée
+        JPanel mostPizzaCard = buildCard("Pizza la plus demandée");
+        tblMostPizza = buildStyledTable(new String[]{"Pizza", "Commandes"});
+        mostPizzaCard.add(styledScroll(tblMostPizza), BorderLayout.CENTER);
+        addCardToColumn(right, mostPizzaCard);
+
+        // Pizza la moins demandée
+        JPanel leastPizzaCard = buildCard("Pizza la moins demandée");
+        tblLeastPizza = buildStyledTable(new String[]{"Pizza", "Commandes"});
+        leastPizzaCard.add(styledScroll(tblLeastPizza), BorderLayout.CENTER);
+        addCardToColumn(right, leastPizzaCard);
 
         center.add(right);
         JScrollPane centerScroll = new JScrollPane(center,
@@ -415,6 +449,7 @@ public class MainFrame extends JFrame {
 
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             List<String[]> unusedVehicles, ordersPerClient, aboveAvg;
+            List<String[]> bestClient, worstDeliverer, mostPizza, leastPizza, favoriteIngredient;
             double avg;
             double totalRevenue;
 
@@ -424,6 +459,11 @@ public class MainFrame extends JFrame {
                 ordersPerClient = statsDAO.getOrdersPerClient();
                 avg             = statsDAO.getAverageOrders();
                 aboveAvg        = statsDAO.getClientsAboveAverage();
+                bestClient       = statsDAO.getBestClient();
+                worstDeliverer   = statsDAO.getWorstDeliverer();
+                mostPizza        = statsDAO.getMostOrderedPizza();
+                leastPizza       = statsDAO.getLeastOrderedPizza();
+                favoriteIngredient = statsDAO.getFavoriteIngredient();
                 totalRevenue    = statsDAO.getTotalRevenue();
                 return null;
             }
@@ -436,6 +476,11 @@ public class MainFrame extends JFrame {
                     fillTable(tblVehicules,       unusedVehicles);
                     fillTable(tblOrdersPerClient, ordersPerClient);
                     fillTable(tblAboveAvg,        aboveAvg);
+                    fillTable(tblBestClient,       bestClient);
+                    fillTable(tblWorstDeliverer,   worstDeliverer);
+                    fillTable(tblMostPizza,        mostPizza);
+                    fillTable(tblLeastPizza,       leastPizza);
+                    fillTable(tblFavoriteIngredient, favoriteIngredient);
                     lblAvgOrders.setText(String.format("%.1f", avg));
                     lblRevenueTotal.setText(String.format("%.2f €", totalRevenue));
                     setStatus("Statistiques mises à jour.");
@@ -850,6 +895,13 @@ public class MainFrame extends JFrame {
             width = maxWidth;
         }
         column.setPreferredWidth(width);
+    }
+
+    private void addCardToColumn(JPanel column, JPanel card) {
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        column.add(card);
+        column.add(Box.createVerticalStrut(12));
     }
 
     /** Bouton de rafraîchissement en bas de panneau */
