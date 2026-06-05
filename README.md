@@ -1,5 +1,9 @@
 # RaPizz — Gestion d'une entreprise de pizzas à domicile
 
+## Auteurs
+Antoine MARMOL
+Alex PITOLEX
+
 ## Vue d'ensemble
 Ce projet Java (Swing + JDBC) gère le menu, les commandes et les fiches de livraison
 pour une pizzeria. La connexion à une base MySQL est assurée via `mysql-connector-j-9.7.0.jar`.
@@ -24,15 +28,15 @@ Project-RaPizz/
 
 1. Créer la base et les tables :
 
-Dans le CLI MySQL exécutez les commandes suivantes :
-SOURCE C:\Users\antoi\Desktop\ESIEE\E3 - FI (Informatique et applications)\Base de donnees\Project-RaPizz\DB_concept\clearDB.sql
-SOURCE C:\Users\antoi\Desktop\ESIEE\E3 - FI (Informatique et applications)\Base de donnees\Project-RaPizz\DB_concept\createDB.sql
-SOURCE C:\Users\antoi\Desktop\ESIEE\E3 - FI (Informatique et applications)\Base de donnees\Project-RaPizz\DB_concept\insDB.sql
-SOURCE C:\Users\antoi\Desktop\ESIEE\E3 - FI (Informatique et applications)\Base de donnees\Project-RaPizz\DB_concept\triggers.sql
+Dans le CLI MySQL exécutez les commandes suivantes (avec chemin absolu) :
+SOURCE path\Project-RaPizz\DB_concept\clearDB.sql
+SOURCE path\Project-RaPizz\DB_concept\createDB.sql
+SOURCE path\Project-RaPizz\DB_concept\insDB.sql
+SOURCE path\Project-RaPizz\DB_concept\triggers.sql
 
 2. Ajuster les identifiants MySQL si nécessaire et créez la base de données :
 
-Éditez `src/ra/pizz/util/DBConnection.java` et mettez à jour `USER` et `PASSWORD`.
+Éditez `src/rapizz/util/DBConnection.java` et mettez à jour `USER` et `PASSWORD`.
 
 
 Votre base de donnée est prête pour l'utilisation.
